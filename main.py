@@ -2,13 +2,26 @@
 from fastapi import FastAPI, HTTPException
 from database import supabase_request
 from models import Empleado, EmpleadoOut, EmpleadoUpdate
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Permitir peticiones desde el frontend en localhost:3000
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  #http://localhost:3000 O ["*"] si quieres permitir todos
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos: GET, POST, PUT, DELETE...
+    allow_headers=["*"],  # Permite todos los headers
+)
 
 # ✅ Crear empleado
 @app.post("/empleados", response_model=EmpleadoOut)
 async def crear_empleado(empleado: Empleado):
     data = await supabase_request("POST", "empleados", data=[empleado.dict()])
+    print("===Respuesta cruda de supabase:====", data)
+    if not data:
+        raise HTTPException(status_code=500, detail="Supabase no devolvió datos del nuevo empleado")
     return data[0]
 
 # 🔍 Obtener todos los empleados

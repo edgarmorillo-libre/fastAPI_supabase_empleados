@@ -10,7 +10,8 @@ SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY")
 HEADERS = {
     "apikey": SUPABASE_API_KEY,
     "Authorization": f"Bearer {SUPABASE_API_KEY}",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "Prefer": "return=representation" 
 }
 
 async def supabase_request(method, endpoint, data=None, params=None):
@@ -18,6 +19,11 @@ async def supabase_request(method, endpoint, data=None, params=None):
     async with httpx.AsyncClient() as client:
         response = await client.request(method, url, headers=HEADERS, json=data, params=params)
         response.raise_for_status()
-        return response.json()
+
+        try:
+            return response.json()
+        except Exception:
+            return None
+
 
 
